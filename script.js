@@ -68,8 +68,20 @@ var makeDeck = function () {
     suitIndex += 1;
   }
 
+  cardDeck = shuffleCards(cardDeck);
+
   // Return the completed card deck
   return cardDeck;
+};
+
+var dealCard = function () {
+  // Get card from top of deck
+  // Delete it from deck
+  // Return card
+};
+
+var initialDeal = function () {
+  // Deal cards by looping through player list and dealer twice
 };
 
 var checkWinCondition = function (userHand) {
@@ -82,14 +94,28 @@ var checkWinCondition = function (userHand) {
   }
 };
 
+var dealerActions = function () {};
+
+var hit = function () {};
+
+var stand = function () {};
+
 var winCondtion = "";
 var WIN_CONDITION_WIN = "Win";
 var WIN_CONDITION_LOSE = "Lose";
 var WIN_CONDITION_STAND = "Stand";
 var userCards = [];
 var dealerCards = [];
+var currentDeck = makeDeck();
 
 var main = function (input) {
+  // Deal two cards to each player and dealer
+  // Compare cards to see if dealer / player wins immediately
+  // If nobody wins, players choose to hit or stand one by one
+  // Check win condition for every player every time they hit
+  // After al players' turn, dealer hits under hit condition is satisfied
+  // Finally compare remaining players and dealer cards to determine win / loss
+
   // Check win condition after every hit
   var myOutputValue = "hello world";
   return myOutputValue;
