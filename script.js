@@ -75,13 +75,25 @@ var makeDeck = function () {
 };
 
 var dealCard = function () {
-  // Get card from top of deck
-  // Delete it from deck
-  // Return card
+  return currentDeck.pop();
 };
 
 var initialDeal = function () {
-  // Deal cards by looping through player list and dealer twice
+  // Create empty arrays to represent hands of every player and dealer and append to allHands
+  for (var x = 0; x <= numOfPlayers; x++) {
+    allHands.push([]);
+  }
+
+  for (var x = 0; x < 2; x++) {
+    playerIndex = 0;
+    // Deal cards by looping through player list and dealer twice
+    while (playerIndex <= numOfPlayers) {
+      var currentCard = dealCard();
+      allHands[playerIndex].push(currentCard);
+      // Increment playerIndex by 1
+      playerIndex += 1;
+    }
+  }
 };
 
 var checkWinCondition = function (userHand) {
@@ -107,9 +119,12 @@ var WIN_CONDITION_STAND = "Stand";
 var userCards = [];
 var dealerCards = [];
 var currentDeck = makeDeck();
+var allHands = [];
+var numOfPlayers = 1;
 
 var main = function (input) {
   // Deal two cards to each player and dealer
+
   // Compare cards to see if dealer / player wins immediately
   // If nobody wins, players choose to hit or stand one by one
   // Check win condition for every player every time they hit
