@@ -78,25 +78,42 @@ var dealCard = function () {
   return currentDeck.pop();
 };
 
+var createPlayerList = function () {
+  // Initialize empty player array
+  var playerList = [];
+  for (let x = 0; x <= numOfPlayers; x++) {
+    if (x < numOfPlayers) {
+      var player = {
+        name: `Player ${x + 1}`,
+      };
+    } else {
+      var player = {
+        name: "Dealer",
+      };
+    }
+    player.hand = [];
+    player.status = "Waiting";
+    playerList.push(player);
+  }
+  return playerList;
+};
+
 var initialDeal = function () {
   // Create empty arrays to represent hands of every player and dealer and append to allHands
-  for (var x = 0; x <= numOfPlayers; x++) {
-    allHands.push([]);
-  }
 
   for (var x = 0; x < 2; x++) {
     playerIndex = 0;
     // Deal cards by looping through player list and dealer twice
-    while (playerIndex <= numOfPlayers) {
+    while (playerIndex <= playerList.length) {
       var currentCard = dealCard();
-      allHands[playerIndex].push(currentCard);
+      playerList[playerIndex].hand.push(currentCard);
       // Increment playerIndex by 1
       playerIndex += 1;
     }
   }
 };
 
-var checkWinCondition = function (userHand) {
+var checkWinCondition = function (hand) {
   if (userHand > 21) {
     return WIN_CONDITION_LOSE;
   } else if (userHand == 21) {
@@ -116,6 +133,11 @@ var winCondtion = "";
 var WIN_CONDITION_WIN = "Win";
 var WIN_CONDITION_LOSE = "Lose";
 var WIN_CONDITION_STAND = "Stand";
+
+var gameState = GAME_STATE_START;
+GAME_STATE_START = "Game Start";
+GAME_STATE_PLAYERTURN = "Player's Turn";
+GAME_STATE_DEALERTURN = "Dealer Turn";
 var userCards = [];
 var dealerCards = [];
 var currentDeck = makeDeck();
@@ -123,7 +145,8 @@ var allHands = [];
 var numOfPlayers = 1;
 
 var main = function (input) {
-  // Deal two cards to each player and dealer
+  // Perform initial deal of two cards to each player and dealer
+  initialDeal();
 
   // Compare cards to see if dealer / player wins immediately
   // If nobody wins, players choose to hit or stand one by one
