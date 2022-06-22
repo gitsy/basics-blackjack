@@ -25,15 +25,19 @@ var calculateHand = function (player) {
       hasAce = true;
     }
     cardTotal += currentCard.value;
+    console.log("cardtotal is", cardTotal);
   }
   if (hasAce) {
     if (cardTotal + 10 > 21) {
+      console.log("cardtotal is", cardTotal);
       return cardTotal;
     } else {
+      console.log("cardtotal is", cardTotal);
       cardTotal += 10;
       return cardTotal;
     }
   }
+  return cardTotal;
 };
 
 var checkInitialDeal = function () {
@@ -80,7 +84,7 @@ var checkInitialDeal = function () {
         currentPlayerIndex = x;
         player.status = PLAYER_STATUS_TURN;
         gameState = GAME_STATE_PLAYERTURN;
-        return `The cards have been dealt. ${player.name} will begin first`;
+        return `The cards have been dealt. ${player.name} will begin first; ${player.name}'s total is currently ${player.handTotal}. Would you like to hit or stand?`;
       } else {
         gameState = GAME_STATE_END;
         return "The cards have been dealt. Everyone has a Blackjack. Click submit to calculate score";
@@ -223,7 +227,19 @@ var initialDeal = function () {
 
 var dealerActions = function () {};
 
-var hit = function () {};
+var hit = function () {
+  var newCard = dealCard();
+  var currentPlayer = playerList[currentPlayerIndex];
+  currentPlayer.hand.push(newCard);
+  var handTotal = calculateHand(currentPlayer);
+  if (handTotal > 21) {
+    // change to PLAYER_STATUS_LOSE and change players
+  } else if (handTotal == 21) {
+    // change to PLAYER_STATUS_WIN and change players
+  } else {
+    // remain same status and same player
+  }
+};
 
 var stand = function () {};
 
@@ -261,6 +277,12 @@ var main = function (input) {
     var outputMessage = initialDeal();
     return outputMessage;
   } else if (gameState == GAME_STATE_PLAYERTURN) {
+    // If hit,
+    if (input == "hit") {
+      outputMessage = hit();
+      return outputMessage;
+    }
+    // deal card and calculate score after hit
     // Check whose turn it is
   }
 };
