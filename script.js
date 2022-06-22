@@ -3,6 +3,8 @@ var getRandomIndex = function (max) {
 };
 
 var hasBlackjack = function (player) {
+  console.log("player is", player);
+  console.log("player hand is is", player.hand);
   var card1Value = player.hand[0].value;
   var card2Value = player.hand[1].value;
   if (
@@ -34,9 +36,11 @@ var calculateHand = function (player) {
   }
 };
 
-var checkInitialDraw = function () {
+var checkInitialDeal = function () {
   // Check if dealer has Blackjack
-  var dealer = playerList[-1];
+  var dealer = playerList[playerList.length - 1];
+  console.log("dealer is", dealer);
+  console.log("dealer's hand is", dealer.hand);
   var dealerHasBlackjack = hasBlackjack(dealer);
 
   if (dealerHasBlackjack) {
@@ -56,9 +60,8 @@ var checkInitialDraw = function () {
         player.handTotal = calculateHand(player);
       }
     }
+    return "The cards have been dealt and the dealer has Blackjack. Click submit to see results";
   } else {
-    // Set gameState to GAME_STATE_PLAYERTURN
-    gameState = GAME_STATE_PLAYERTURN;
     // Loop through the entire playerList and set anyone with Blackjack to PLAYER_STATUS_WIN
     for (var x = 0; x < playerList.length - 1; x++) {
       var player = playerList[x];
@@ -68,6 +71,19 @@ var checkInitialDraw = function () {
         player.handTotal = 21;
       } else {
         player.handTotal = calculateHand(player);
+      }
+    }
+    // Check if any players with PLAYER_STATUS_WAITING
+    for (var x = 0; x < playerList.length - 1; x++) {
+      // loop all except dealer
+      if (playerList[x].status == PLAYER_STATUS_WAITING) {
+        currentPlayerIndex = x;
+        player.status = PLAYER_STATUS_TURN;
+        gameState = GAME_STATE_PLAYERTURN;
+        return `The cards have been dealt. ${player.name} will begin first`;
+      } else {
+        gameState = GAME_STATE_END;
+        return "The cards have been dealt. Everyone has a Blackjack. Click submit to calculate score";
       }
     }
   }
@@ -152,7 +168,9 @@ var makeDeck = function () {
 };
 
 var dealCard = function () {
-  return currentDeck.pop();
+  var dealtCard = currentDeck.pop();
+  console.log("dealt card is", dealtCard);
+  return dealtCard;
 };
 
 var createPlayerList = function (numOfPlayers) {
@@ -181,25 +199,26 @@ var initialDeal = function () {
   currentDeck = makeDeck();
 
   for (var x = 0; x < 2; x++) {
-    playerIndex = 0;
     // Deal cards by looping through player list and dealer twice
-    while (playerIndex <= playerList.length) {
+    for (var y = 0; y < playerList.length; y++) {
       var currentCard = dealCard();
-      playerList[playerIndex].hand.push(currentCard);
-      // Increment playerIndex by 1
-      playerIndex += 1;
+      console.log(playerList[y].name, "is receiving", currentCard);
+      console.log(
+        playerList[y].name,
+        "'s hand is currently",
+        playerList[y].hand
+      );
+      playerList[y].hand.push(currentCard);
     }
   }
-};
+  console.log(
+    playerList[0].name,
+    "has this hand after initial deal",
+    playerList[0].hand
+  );
 
-var setPlayerStatus = function (sumOfCards) {
-  if (userHand > 21) {
-    return PLAYER_STATUS_LOSE;
-  } else if (userHand == 21) {
-    return PLAYER_STATUS_WIN;
-  } else if (userHand < 21) {
-    return PLAYER_STATUS_TURN;
-  }
+  message = checkInitialDeal();
+  return message;
 };
 
 var dealerActions = function () {};
@@ -213,36 +232,45 @@ var PLAYER_STATUS_WIN = "Player has won";
 var PLAYER_STATUS_LOSE = "Player has lost";
 var PLAYER_STATUS_TIE = "Player has tied";
 var PLAYER_STATUS_STAND = "Player's turn has ended";
-var PALYER_STATUS_TURN = "Player is taking their turn";
+var PLAYER_STATUS_TURN = "Player is taking their turn";
 
-var gameState = GAME_STATE_SETPLAYERS;
 var GAME_STATE_SETPLAYERS = "Choose number of players";
 var GAME_STATE_START = "Game Start";
 var GAME_STATE_PLAYERTURN = "Player's Turn";
 var GAME_STATE_DEALERTURN = "Dealer Turn";
 var GAME_STATE_END = "End of Game";
+var gameState = GAME_STATE_SETPLAYERS;
 
 var PLAYER_NAME_DEALER = "Dealer";
 
+var currentPlayerIndex = "None";
 var currentDeck = makeDeck();
 var playerList = [];
+
 var main = function (input) {
   // Check game state
   if (gameState == GAME_STATE_SETPLAYERS) {
+    console.log(gameState);
     playerList = createPlayerList(input); // TODO validation for player number input
+    gameState = GAME_STATE_START;
+    return `You have entered ${input}.<br>
+    The game will begin with ${input} players<br>
+    Press submit again to deal cards`;
   } else if (gameState == GAME_STATE_START) {
     // Perform initial deal of two cards to each player and dealer
-    var dealer = playerList[-1];
-    checkInitialDraw(dealer); // check if dealer has Blackjack from initial draw
+    var outputMessage = initialDeal();
+    return outputMessage;
+  } else if (gameState == GAME_STATE_PLAYERTURN) {
+    // Check whose turn it is
   }
-
-  // Compare cards to see if dealer / player wins immediately
-  // If nobody wins, players choose to hit or stand one by one
-  // Check win condition for every player every time they hit
-  // After al players' turn, dealer hits under hit condition is satisfied
-  // Finally compare remaining players and dealer cards to determine win / loss
-
-  // Check win condition after every hit
-  var myOutputValue = "hello world";
-  return myOutputValue;
 };
+
+// Compare cards to see if dealer / player wins immediately
+// If nobody wins, players choose to hit or stand one by one
+// Check win condition for every player every time they hit
+// After al players' turn, dealer hits under hit condition is satisfied
+// Finally compare remaining players and dealer cards to determine win / loss
+
+// Check win condition after every hit
+// var myOutputValue = "hello world";
+// return myOutputValue;
