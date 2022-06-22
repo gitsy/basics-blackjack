@@ -2,6 +2,77 @@ var getRandomIndex = function (max) {
   return Math.floor(Math.random() * max);
 };
 
+var hasBlackjack = function (player) {
+  var card1Value = player.hand[0].value;
+  var card2Value = player.hand[1].value;
+  if (
+    [card1Value, card2Value].includes(1) & [card1Value, card2Value].includes(10)
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+var calculateHand = function (player) {
+  cardTotal = 0;
+  hasAce = false;
+  for (var x = 0; x < player.hand.length; x++) {
+    var currentCard = player.hand[x];
+    if (currentCard.value == 1) {
+      hasAce = true;
+    }
+    cardTotal += currentCard.value;
+  }
+  if (hasAce) {
+    if (cardTotal + 10 > 21) {
+      return cardTotal;
+    } else {
+      cardTotal += 10;
+      return cardTotal;
+    }
+  }
+};
+
+var checkInitialDraw = function () {
+  // Check if dealer has Blackjack
+  var dealer = playerList[-1];
+  var dealerHasBlackjack = hasBlackjack(dealer);
+
+  if (dealerHasBlackjack) {
+    // Set gameState to GAME_STATE_END
+    gameState = GAME_STATE_END;
+    // Dealer set to PLAYER_STATUS_WIN
+    dealer.status = PLAYER_STATUS_WIN;
+    // If any other player has Blackjack, set PLAYER_STATUS_TIE else set PLAYER_STATUS_LOSE
+    for (var x = 0; x < playerList.length - 1; x++) {
+      var player = playerList[x];
+      var playerHasBlackjack = hasBlackjack(player);
+      if (playerHasBlackjack) {
+        player.status = PLAYER_STATUS_TIE;
+        player.handTotal = 21;
+      } else {
+        player.status = PLAYER_STATUS_LOSE;
+        player.handTotal = calculateHand(player);
+      }
+    }
+  } else {
+    // Set gameState to GAME_STATE_PLAYERTURN
+    gameState = GAME_STATE_PLAYERTURN;
+    // Loop through the entire playerList and set anyone with Blackjack to PLAYER_STATUS_WIN
+    for (var x = 0; x < playerList.length - 1; x++) {
+      var player = playerList[x];
+      var playerHasBlackjack = hasBlackjack(player);
+      if (playerHasBlackjack) {
+        player.status = PLAYER_STATUS_WIN;
+        player.handTotal = 21;
+      } else {
+        player.handTotal = calculateHand(player);
+      }
+    }
+  }
+};
+
 var shuffleCards = function (cardDeck) {
   // Loop over current card deck array once
   var currentIndex = 0;
@@ -39,15 +110,20 @@ var makeDeck = function () {
     var rankCounter = 1;
     while (rankCounter <= 13) {
       var cardName = rankCounter;
+      var cardValue = rankCounter;
       // if rank is 1, 11, 12, or 13, set cardName to ace or face card's name
       if (cardName == 1) {
         cardName = "ace";
+        cardValue = 1;
       } else if (cardName == 11) {
         cardName = "jack";
+        cardValue = 10;
       } else if (cardName == 12) {
         cardName == "queen";
+        cardValue = 10;
       } else if (cardName == 13) {
         cardName == "king";
+        cardValue = 10;
       }
 
       // Create new card with name suit and rank
@@ -55,6 +131,7 @@ var makeDeck = function () {
         name: cardName,
         suit: currentSuit,
         rank: rankCounter,
+        value: cardValue,
       };
 
       // Add new card to deck
@@ -78,7 +155,7 @@ var dealCard = function () {
   return currentDeck.pop();
 };
 
-var createPlayerList = function () {
+var createPlayerList = function (numOfPlayers) {
   // Initialize empty player array
   var playerList = [];
   for (let x = 0; x <= numOfPlayers; x++) {
@@ -88,18 +165,20 @@ var createPlayerList = function () {
       };
     } else {
       var player = {
-        name: "Dealer",
+        name: PLAYER_NAME_DEALER,
       };
     }
     player.hand = [];
-    player.status = "Waiting";
+    player.handTotal = 0;
+    player.status = PLAYER_STATUS_WAITING;
     playerList.push(player);
   }
   return playerList;
 };
 
 var initialDeal = function () {
-  // Create empty arrays to represent hands of every player and dealer and append to allHands
+  // Create a brand new deck
+  currentDeck = makeDeck();
 
   for (var x = 0; x < 2; x++) {
     playerIndex = 0;
@@ -113,13 +192,13 @@ var initialDeal = function () {
   }
 };
 
-var checkWinCondition = function (hand) {
+var setPlayerStatus = function (sumOfCards) {
   if (userHand > 21) {
-    return WIN_CONDITION_LOSE;
+    return PLAYER_STATUS_LOSE;
   } else if (userHand == 21) {
-    return WIN_CONDITION_WIN;
+    return PLAYER_STATUS_WIN;
   } else if (userHand < 21) {
-    return WIN_CONDITION_STAND;
+    return PLAYER_STATUS_TURN;
   }
 };
 
@@ -129,24 +208,33 @@ var hit = function () {};
 
 var stand = function () {};
 
-var winCondtion = "";
-var WIN_CONDITION_WIN = "Win";
-var WIN_CONDITION_LOSE = "Lose";
-var WIN_CONDITION_STAND = "Stand";
+var PLAYER_STATUS_WAITING = "Player is currently waiting";
+var PLAYER_STATUS_WIN = "Player has won";
+var PLAYER_STATUS_LOSE = "Player has lost";
+var PLAYER_STATUS_TIE = "Player has tied";
+var PLAYER_STATUS_STAND = "Player's turn has ended";
+var PALYER_STATUS_TURN = "Player is taking their turn";
 
-var gameState = GAME_STATE_START;
-GAME_STATE_START = "Game Start";
-GAME_STATE_PLAYERTURN = "Player's Turn";
-GAME_STATE_DEALERTURN = "Dealer Turn";
-var userCards = [];
-var dealerCards = [];
+var gameState = GAME_STATE_SETPLAYERS;
+var GAME_STATE_SETPLAYERS = "Choose number of players";
+var GAME_STATE_START = "Game Start";
+var GAME_STATE_PLAYERTURN = "Player's Turn";
+var GAME_STATE_DEALERTURN = "Dealer Turn";
+var GAME_STATE_END = "End of Game";
+
+var PLAYER_NAME_DEALER = "Dealer";
+
 var currentDeck = makeDeck();
-var allHands = [];
-var numOfPlayers = 1;
-
+var playerList = [];
 var main = function (input) {
-  // Perform initial deal of two cards to each player and dealer
-  initialDeal();
+  // Check game state
+  if (gameState == GAME_STATE_SETPLAYERS) {
+    playerList = createPlayerList(input); // TODO validation for player number input
+  } else if (gameState == GAME_STATE_START) {
+    // Perform initial deal of two cards to each player and dealer
+    var dealer = playerList[-1];
+    checkInitialDraw(dealer); // check if dealer has Blackjack from initial draw
+  }
 
   // Compare cards to see if dealer / player wins immediately
   // If nobody wins, players choose to hit or stand one by one
