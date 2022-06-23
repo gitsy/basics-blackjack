@@ -259,9 +259,9 @@ var hit = function () {
     nextPlayerMsg += selectNextPlayer();
   } else if (handTotal == 21) {
     // change to PLAYER_STATUS_WIN and change players
-    currentPlayer.status == PLAYER_STATUS_WIN;
+    currentPlayer.status = PLAYER_STATUS_WIN;
     var nextPlayerMsg = "You win.<br>";
-    nextPlayerMsg = selectNextPlayer();
+    nextPlayerMsg += selectNextPlayer();
   }
   var message = `${currentPlayer.name} chose to hit<br>
   The new card is ${newCard.name} of ${newCard.suit}<br>
