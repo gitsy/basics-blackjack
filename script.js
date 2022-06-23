@@ -81,9 +81,10 @@ var checkInitialDeal = function () {
     for (var x = 0; x < playerList.length - 1; x++) {
       // loop all except dealer
       if (playerList[x].status == PLAYER_STATUS_WAITING) {
-        currentPlayerIndex = x;
+        player = playerList[x];
         player.status = PLAYER_STATUS_TURN;
         gameState = GAME_STATE_PLAYERTURN;
+        currentPlayerIndex = x;
         return `The cards have been dealt. ${player.name} will begin first; ${player.name}'s total is currently ${player.handTotal}. Would you like to hit or stand?`;
       } else {
         gameState = GAME_STATE_END;
@@ -139,10 +140,10 @@ var makeDeck = function () {
         cardName = "jack";
         cardValue = 10;
       } else if (cardName == 12) {
-        cardName == "queen";
+        cardName = "queen";
         cardValue = 10;
       } else if (cardName == 13) {
-        cardName == "king";
+        cardName = "king";
         cardValue = 10;
       }
 
@@ -166,6 +167,7 @@ var makeDeck = function () {
   }
 
   cardDeck = shuffleCards(cardDeck);
+  console.log(cardDeck);
 
   // Return the completed card deck
   return cardDeck;
@@ -196,6 +198,22 @@ var createPlayerList = function (numOfPlayers) {
     playerList.push(player);
   }
   return playerList;
+};
+
+var selectNextPlayer = function () {
+  // loop through player list and change next player with PLAYER_STATUS_WAITING to PLAYER_STATUS_TURN
+  for (var x = 0; x < playerList.length; x++) {
+    if (
+      (playerList[x].status == PLAYER_STATUS_WAITING) &
+      (x != playerList.length - 1)
+    ) {
+      currentPlayerIndex = x;
+      return `It is now ${playerList[x].name}'s turn. Do you want to hit or stand?`;
+    } else if (x == playerList.length - 1) {
+      gameState = GAME_STATE_DEALERTURN;
+      return "All players have taken their turns. The dealer goes next. Hit submit for dealer's turn";
+    }
+  }
 };
 
 var initialDeal = function () {
@@ -230,15 +248,25 @@ var dealerActions = function () {};
 var hit = function () {
   var newCard = dealCard();
   var currentPlayer = playerList[currentPlayerIndex];
+  console.log("current player is", currentPlayer);
   currentPlayer.hand.push(newCard);
   var handTotal = calculateHand(currentPlayer);
+  var nextPlayerMsg = "";
   if (handTotal > 21) {
     // change to PLAYER_STATUS_LOSE and change players
+    currentPlayer.status = PLAYER_STATUS_LOSE;
+    nextPlayerMsg = "You lose.<br>";
+    nextPlayerMsg += selectNextPlayer();
   } else if (handTotal == 21) {
     // change to PLAYER_STATUS_WIN and change players
-  } else {
-    // remain same status and same player
+    currentPlayer.status == PLAYER_STATUS_WIN;
+    var nextPlayerMsg = "You win.<br>";
+    nextPlayerMsg = selectNextPlayer();
   }
+  var message = `${currentPlayer.name} chose to hit<br>
+  The new card is ${newCard.name} of ${newCard.suit}<br>
+  The current total is ${handTotal}<br> ${nextPlayerMsg}`;
+  return message;
 };
 
 var stand = function () {};
